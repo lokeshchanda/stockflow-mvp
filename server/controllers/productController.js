@@ -1,19 +1,28 @@
 const { pool } = require("../config/db");
 
-// GET ALL PRODUCTS
+// GET ALL
 const getProducts = async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT * FROM products");
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const [rows] = await pool.query("SELECT * FROM products");
+  res.json(rows);
 };
 
-// ADD PRODUCT
+// ADD
 const addProduct = async (req, res) => {
-  try {
-    const {
+  const {
+    product_name,
+    sku,
+    description,
+    quantity_in_hand,
+    cost_price,
+    selling_price,
+    low_stock_threshold,
+  } = req.body;
+
+  await pool.query(
+    `INSERT INTO products 
+    (product_name, sku, description, quantity_in_hand, cost_price, selling_price, low_stock_threshold)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
       product_name,
       sku,
       description,
@@ -21,30 +30,36 @@ const addProduct = async (req, res) => {
       cost_price,
       selling_price,
       low_stock_threshold,
-    } = req.body;
+    ]
+  );
 
-    await pool.query(
-      `INSERT INTO products 
-      (product_name, sku, description, quantity_in_hand, cost_price, selling_price, low_stock_threshold)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        product_name,
-        sku,
-        description,
-        quantity_in_hand,
-        cost_price,
-        selling_price,
-        low_stock_threshold,
-      ]
-    );
+  res.json({ message: "Product added" });
+};
 
-    res.json({ message: "Product added successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+// UPDATE (IMPORTANT FIX)
+const updateProduct = async (req, res) => {
+  const { id } = req.params;
+
+  await pool.query("UPDATE products SET ? WHERE id = ?", [
+    req.body,
+    id,
+  ]);
+
+  res.json({ message: "Updated" });
+};
+
+// DELETE
+const deleteProduct = async (req, res) => {
+  const { id } = req.params;
+
+  await pool.query("DELETE FROM products WHERE id = ?", [id]);
+
+  res.json({ message: "Deleted" });
 };
 
 module.exports = {
   getProducts,
   addProduct,
+  updateProduct,
+  deleteProduct,
 };
