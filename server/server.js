@@ -1,65 +1,24 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+app.get("/seed-user", async (req, res) => {
+  try {
+    const { pool } = require("./config/db");
 
-// Database
-const { connectDB } = require("./config/db");
+    const [existing] = await pool.query(
+      "SELECT * FROM users WHERE email = ?",
+      ["admin@gmail.com"]
+    );
 
-// Routes
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const productRoutes = require("./routes/productRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const settingsRoutes = require("./routes/settingsRoutes");
+    if (existing.length > 0) {
+      return res.json({ message: "User already exists" });
+    }
 
-// Middleware
-const errorHandler = require("./middleware/errorMiddleware");
+    await pool.query(
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      ["Admin", "admin@gmail.com", "123456"]
+    );
 
-const app = express();
+    res.json({ message: "User created successfully" });
 
-// Connect MySQL
-connectDB();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/settings", settingsRoutes);
-
-// Home Route
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "🚀 StockFlow API Running Successfully",
-  });
-});
-
-// Health Check
-app.get("/health", (req, res) => {
-  res.json({
-    success: true,
-    status: "Healthy",
-  });
-});
-
-// 404
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route Not Found",
-  });
-});
-
-// Error Handler
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
