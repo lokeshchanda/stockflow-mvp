@@ -28,3 +28,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server running on", PORT);
 });
+app.get("/test-route", (req, res) => {
+  res.json({ success: true, message: "TEST ROUTE WORKING" });
+});
