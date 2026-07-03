@@ -1,68 +1,50 @@
-const Product = require("../models/Product");
+const { pool } = require("../config/db");
 
-// CREATE PRODUCT
-const createProduct = async (req, res) => {
+// GET ALL PRODUCTS
+const getProducts = async (req, res) => {
   try {
-    const {
-      productName,
-      sku,
-      category,
-      quantity,
-      price,
-      lowStockThreshold,
-      description,
-    } = req.body;
-
-    if (!productName || !sku) {
-      return res.status(400).json({
-        success: false,
-        message: "Product Name and SKU required",
-      });
-    }
-
-    const product = await Product.create({
-      organization: req.user.organization_id, // 🔥 FIX HERE
-      productName,
-      sku,
-      category,
-      quantity,
-      price,
-      lowStockThreshold,
-      description,
-    });
-
-    res.status(201).json({
-      success: true,
-      product,
-    });
+    const [rows] = await pool.query("SELECT * FROM products");
+    res.json(rows);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// GET PRODUCTS
-const getProducts = async (req, res) => {
+// ADD PRODUCT
+const addProduct = async (req, res) => {
   try {
-    const products = await Product.find({
-      organization: req.user.organization_id, // 🔥 FIX HERE
-    }).sort({ createdAt: -1 });
+    const {
+      product_name,
+      sku,
+      description,
+      quantity_in_hand,
+      cost_price,
+      selling_price,
+      low_stock_threshold,
+    } = req.body;
 
-    res.json({
-      success: true,
-      products,
-    });
+    await pool.query(
+      `INSERT INTO products 
+      (product_name, sku, description, quantity_in_hand, cost_price, selling_price, low_stock_threshold)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        product_name,
+        sku,
+        description,
+        quantity_in_hand,
+        cost_price,
+        selling_price,
+        low_stock_threshold,
+      ]
+    );
+
+    res.json({ message: "Product added successfully" });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
 module.exports = {
-  createProduct,
   getProducts,
+  addProduct,
 };
