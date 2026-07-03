@@ -3,23 +3,32 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// DB
 const { pool } = require("./config/db");
 
-// HOME TEST
+// ======================
+// HEALTH CHECK
+// ======================
 app.get("/", (req, res) => {
-  res.json({ success: true, message: "API Working" });
+  res.json({
+    success: true,
+    message: "🚀 StockFlow API Running Successfully"
+  });
 });
 
-// SEED USER (TEST ROUTE)
-app.get("/seed-user", async (req, res) => {
+// ======================
+// TEST DB CONNECTION
+// ======================
+app.get("/test-db", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT 1");
-    res.json({ success: true, message: "DB Connected Working", rows });
+    res.json({ success: true, message: "DB Connected", rows });
   } catch (err) {
-    res.json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -27,7 +36,4 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log("Server running on", PORT);
-});
-app.get("/test-route", (req, res) => {
-  res.json({ success: true, message: "TEST ROUTE WORKING" });
 });
