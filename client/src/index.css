@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* GLOBAL BACKGROUND */
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: #0b1220;
+  color: white;
+}
+
+/* SCROLLBAR (optional pro look) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 10px;
+}
