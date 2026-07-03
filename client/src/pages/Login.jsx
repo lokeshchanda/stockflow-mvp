@@ -1,52 +1,43 @@
 import { useState } from "react";
-import { Eye, EyeOff, Package2 } from "lucide-react";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { Toaster, toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill all fields");
-      return;
-    }
 
     try {
       setLoading(true);
 
       const { data } = await API.post("/auth/login", formData);
 
+      // Save token + user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      toast.success("Login Successful");
+      // Redirect
+      navigate("/dashboard");
 
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
     } catch (err) {
-      toast.error(
+      console.log(err.response?.data || err.message);
+
+      alert(
         err.response?.data?.message || "Login Failed"
       );
     } finally {
@@ -55,130 +46,49 @@ function Login() {
   };
 
   return (
-    <>
-      <Toaster position="top-right" />
+    <div className="h-screen flex items-center justify-center bg-[#0b1220] text-white">
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-700 p-5">
+      <div className="w-96 bg-[#111827] border border-gray-800 p-8 rounded-2xl">
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
+        <h1 className="text-2xl font-bold text-center mb-6">
+          StockFlow Login
+        </h1>
 
-          <div className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-            <div className="flex flex-col items-center">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full p-3 bg-[#0b1220] border border-gray-700 rounded-lg outline-none"
+            required
+          />
 
-              <div className="bg-white p-4 rounded-full shadow-lg">
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full p-3 bg-[#0b1220] border border-gray-700 rounded-lg outline-none"
+            required
+          />
 
-                <Package2
-                  size={40}
-                  className="text-indigo-700"
-                />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-500 p-3 rounded-lg transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
 
-              </div>
-
-              <h1 className="text-4xl font-bold text-white mt-5">
-                StockFlow
-              </h1>
-
-              <p className="text-white/70 mt-2">
-                Inventory Management System
-              </p>
-
-            </div>
-
-            <form
-              onSubmit={handleSubmit}
-              className="mt-8 space-y-5"
-            >
-
-              <div>
-
-                <label className="text-white text-sm">
-                  Email
-                </label>
-
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-2 w-full rounded-xl border border-white/20 bg-white/20 px-4 py-3 text-white placeholder:text-white/60 outline-none"
-                />
-
-              </div>
-
-              <div>
-
-                <label className="text-white text-sm">
-                  Password
-                </label>
-
-                <div className="relative mt-2">
-
-                  <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
-                    name="password"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-white/20 bg-white/20 px-4 py-3 pr-12 text-white placeholder:text-white/60 outline-none"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword(!showPassword)
-                    }
-                    className="absolute right-4 top-4 text-white"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
-                  </button>
-
-                </div>
-
-              </div>
-
-              <button
-                disabled={loading}
-                className="w-full rounded-xl bg-white py-3 font-semibold text-indigo-700 transition hover:scale-105 disabled:opacity-70"
-              >
-                {loading ? "Signing In..." : "Login"}
-              </button>
-
-            </form>
-
-            <div className="mt-6 text-center text-white">
-
-              Don't have an account?
-
-              <Link
-                to="/register"
-                className="ml-2 font-bold underline"
-              >
-                Register
-              </Link>
-
-            </div>
-
-          </div>
-
-        </motion.div>
+        </form>
 
       </div>
-    </>
+
+    </div>
   );
 }
 

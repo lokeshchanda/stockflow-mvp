@@ -6,22 +6,15 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
 });
 
-async function connectDB() {
+const connectDB = async () => {
   try {
-    const connection = await pool.getConnection();
-    console.log("✅ MySQL Connected Successfully");
-    connection.release();
-  } catch (error) {
-    console.error("❌ MySQL Connection Failed:", error.message);
-    process.exit(1);
+    await pool.getConnection();
+    console.log("MySQL Connected");
+  } catch (err) {
+    console.error("DB Connection Failed", err);
   }
-}
-
-module.exports = {
-  pool,
-  connectDB,
 };
+
+module.exports = { pool, connectDB };
